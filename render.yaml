@@ -1,0 +1,26 @@
+# Render blueprint - the API only. The React app goes to Vercel.
+#
+# Free tier notes:
+#   - the service sleeps after 15 minutes idle, so the first request after a
+#     quiet spell takes about 50 seconds. Acceptable for personal use.
+#   - there is no cron on the free tier. The daily refresh runs from GitHub
+#     Actions instead (.github/workflows/refresh.yml).
+
+services:
+  - type: web
+    name: finishh-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: singapore          # closest Render offers to India
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL      # paste the Neon string in the Render dashboard
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS   # the Vercel URL, once it exists
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b

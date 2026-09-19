@@ -1,0 +1,11 @@
+# Finishh club - R1
+#
+# Pinned to a minimum version, not exact, so security patches still arrive.
+
+fastapi>=0.141              # the API framework
+uvicorn>=0.53               # the server that runs it
+psycopg[binary]>=3.3        # Postgres driver
+pydantic>=2.13              # response validation and structured output
+groq>=1.7                   # the LLM Isaa runs on
+python-dotenv>=1.2          # reads .env files
+certifi>=2026.7             # CA bundle - macOS Python cannot verify TLS without it

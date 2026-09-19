@@ -1,0 +1,56 @@
+# DAILY DATA REFRESH
+#
+# Runs on GitHub's machines, not on a server of ours. Render's free tier has no
+# cron, and this costs nothing - two short jobs use about 60 of the 2,000 free
+# minutes a month.
+#
+# The job writes straight to Neon, so the API does not need to be awake.
+#
+# BEFORE THIS WORKS
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#     DATABASE_URL   the Neon connection string
+#
+# WATCH OUT
+#   GitHub disables scheduled workflows after 60 days with no repository
+#   activity. Push something occasionally, or trigger it by hand from the
+#   Actions tab.
+
+name: Daily data refresh
+
+on:
+  schedule:
+    # 18:00 UTC = 23:30 IST, Monday to Friday.
+    # SEBI requires NAV on AMFI by 23:00 IST on business days, so this runs
+    # half an hour after the deadline. Weekends are skipped - markets are
+    # closed and the file would be unchanged.
+    - cron: "0 18 * * 1-5"
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+concurrency:
+  group: data-refresh       # never two refreshes at once
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Append today's NAV
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m ingest.daily
+
+      - name: Recompute meters
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m meter.job
