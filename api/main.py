@@ -16,8 +16,12 @@ from __future__ import annotations
 
 import os
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from db.connection import close_pool, pool
 
 from config import APP_NAME, APP_VERSION
 
@@ -37,7 +41,20 @@ ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Open the connection pool before the first request rather than during it.
+
+    Without this the first visitor pays ~900 ms for the TLS handshake and for
+    waking Neon's compute. With it, that cost lands on startup where nobody is
+    waiting."""
+    pool()
+    yield
+    close_pool()
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Finishh club API",
     version=APP_VERSION,
     description="Explains Indian mutual funds. Never gives investment advice.",

@@ -4,7 +4,7 @@
 
 fastapi>=0.141              # the API framework
 uvicorn>=0.53               # the server that runs it
-psycopg[binary]>=3.3        # Postgres driver
+psycopg[binary,pool]>=3.3   # Postgres driver + connection pool
 pydantic>=2.13              # response validation and structured output
 groq>=1.7                   # the LLM Isaa runs on
 python-dotenv>=1.2          # reads .env files

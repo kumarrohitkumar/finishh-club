@@ -8,6 +8,15 @@ WHY IT IS ITS OWN FILE
     Every other file asks this one for a connection. When we move from Neon to
     somewhere else, only the connection string changes - no code does.
 
+WHY A POOL AND NOT A CONNECTION PER REQUEST
+    Measured against Neon: opening a connection costs about 700 ms (TLS
+    handshake plus waking the compute), while the query itself costs a few
+    milliseconds. A fresh connection per request made every API call ~900 ms
+    and put rule N-1 (p95 under 400 ms) out of reach.
+
+    The pool keeps connections open and hands them out, so only the very first
+    request pays that cost.
+
 WHERE THE URL COMES FROM
     A .env file, never code. A connection string contains a password, and a
     password in code ends up in git.
@@ -21,10 +30,11 @@ IF IT IS MISSING
 from __future__ import annotations
 
 import os
+import atexit
 from contextlib import contextmanager
 
-import psycopg
 from dotenv import load_dotenv
+from psycopg_pool import ConnectionPool
 
 # .env holds defaults you may commit; .env.local holds secrets and wins.
 # `neon link` writes DATABASE_URL into .env.local, so that one is loaded last.
@@ -52,16 +62,44 @@ def database_url() -> str:
     return url
 
 
+_pool: ConnectionPool | None = None
+
+MIN_CONNECTIONS = 1
+MAX_CONNECTIONS = 8          # Neon's free tier allows far more; 8 is plenty here
+
+
+def pool() -> ConnectionPool:
+    """Created once, on first use. Scripts and the API share the same code."""
+    global _pool
+    if _pool is None:
+        from config import DB_CONNECT_TIMEOUT_SECONDS
+        _pool = ConnectionPool(
+            database_url(),
+            min_size=MIN_CONNECTIONS,
+            max_size=MAX_CONNECTIONS,
+            timeout=DB_CONNECT_TIMEOUT_SECONDS,
+            max_idle=300,        # Neon suspends idle computes anyway
+            open=True,
+        )
+        # Scripts exit without cleaning up, which leaves pool worker threads
+        # complaining on the way out. The API closes it properly in its
+        # lifespan hook; this covers everything else.
+        atexit.register(close_pool)
+    return _pool
+
+
+def close_pool() -> None:
+    global _pool
+    if _pool is not None:
+        _pool.close()
+        _pool = None
+
+
 @contextmanager
 def connect():
-    """A connection that always gets closed, even if something fails."""
-    from config import DB_CONNECT_TIMEOUT_SECONDS
-
-    conn = psycopg.connect(database_url(), connect_timeout=DB_CONNECT_TIMEOUT_SECONDS)
-    try:
+    """A pooled connection, returned to the pool on exit."""
+    with pool().connection() as conn:
         yield conn
-    finally:
-        conn.close()
 
 
 def check() -> None:

@@ -1,7 +1,18 @@
 # secrets - never commit
-.env
-.env.local
+#
+# Ignore EVERY .env variant, including backups and odd suffixes like
+# .env.local.ohio-backup, then allow back the two that are deliberately
+# public. A denylist misses the file you did not think of; an allowlist
+# cannot.
+.env*
 *.env
+*.env.*
+*-backup
+*.bak
+
+# ...except these, which contain no secrets and must be committed
+!deploy-secrets.env.example
+!frontend/.env.production
 
 # python
 __pycache__/
@@ -21,3 +32,4 @@ logs/
 
 # deploy tokens - never commit
 deploy-secrets.env
+RENDER_ENV_VARS.txt
