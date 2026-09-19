@@ -18,3 +18,6 @@ logs/
 
 # neon cli local link (org/project ids)
 .neon
+
+# deploy tokens - never commit
+deploy-secrets.env
