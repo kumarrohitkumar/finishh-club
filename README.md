@@ -3,7 +3,11 @@
 An app that explains Indian mutual funds, IPOs and stocks in plain English.
 It never tells anyone what to buy.
 
-**Status:** R1, Step 0 complete. The Meter works on real data. 26 tests passing.
+**Status:** R1 backend and web app complete. 74 tests passing.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kumarrohitkumar/finishh-club)
+
+See [DEPLOY.md](DEPLOY.md) for the three steps.
 
 ---
 
