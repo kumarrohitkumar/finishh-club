@@ -49,6 +49,16 @@ class AskResponse(BaseModel):
                        "Nothing here is a recommendation to buy or sell.")
 
 
+def _wait_message(seconds: float) -> str:
+    """"Try again in 18001 seconds" is technically true and useless."""
+    if seconds < 90:
+        return f"Isaa is busy. Try again in about {int(seconds)} seconds."
+    if seconds < 3600:
+        return f"Isaa is busy. Try again in about {round(seconds / 60)} minutes."
+    return (f"Isaa has used up today's free allowance. It resets in about "
+            f"{round(seconds / 3600)} hours. Fund data and meters still work.")
+
+
 def _within_rate_limit() -> bool:
     now = time.time()
     _recent[:] = [t for t in _recent if now - t < WINDOW_SECONDS]
@@ -73,8 +83,7 @@ def isaa_ask(body: AskRequest):
         # come back and let them decide.
         raise HTTPException(
             status_code=429,
-            detail=f"Isaa is out of capacity right now. Try again in about "
-                   f"{int(exc.retry_after)} seconds.",
+            detail=_wait_message(exc.retry_after),
             headers={"Retry-After": str(int(exc.retry_after))})
     except Exception as exc:
         # Isaa is not on the critical path (HLD section 8). If the model is

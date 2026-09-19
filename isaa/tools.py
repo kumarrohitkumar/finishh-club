@@ -77,7 +77,36 @@ def get_fund_details(source_code: str) -> dict:
     }
 
 
-def get_meter(source_code: str, period_years: int = 3) -> dict:
+def get_meter(source_code: str, period_years: int | None = None) -> dict:
+    """All three holding periods in ONE call unless one is named.
+
+    Why: "is this fund risky?" made the model call this three times - three
+    round trips, three times the tokens, and about 45 seconds. The three
+    periods are one row lookup each; there is no reason to make the model ask
+    three times. Fewer, better tool calls is the whole lesson.
+    """
+    if period_years is None:
+        periods = {}
+        for years in HOLDING_PERIODS_YEARS:
+            result = _one_meter(source_code, years)
+            if "error" in result:
+                return result
+            periods[f"{years}Y"] = result
+        first = periods[f"{HOLDING_PERIODS_YEARS[0]}Y"]
+        return {
+            "source_code": source_code,
+            "scale": first["scale"],
+            "data_from": first["data_from"],
+            "data_to": first["data_to"],
+            "by_holding_period": periods,
+            "source": "AMFI",
+            "meaning": ("Share of past rolling periods that ended in each outcome, "
+                        "for each holding period. Historical only - not a prediction."),
+        }
+    return _one_meter(source_code, period_years)
+
+
+def _one_meter(source_code: str, period_years: int) -> dict:
     """The Finishh Meter. Read from the table - never computed here (rule N-2)."""
     if period_years not in HOLDING_PERIODS_YEARS:
         return {"error": f"period_years must be one of {list(HOLDING_PERIODS_YEARS)}"}
@@ -148,11 +177,14 @@ DECLARATIONS = [
     {"type": "function", "function": {
         "name": "get_meter",
         "description": ("The Finishh Meter for a fund: how often each outcome "
-                        "happened over a holding period of 1, 3 or 5 years. "
+                        "happened historically. Call this ONCE and leave "
+                        "period_years out to get 1, 3 and 5 years together - "
+                        "do not call it separately for each period. "
                         "Historical distribution, never a forecast."),
         "parameters": {"type": "object", "properties": {
             "source_code": {"type": "string"},
-            "period_years": {"type": "integer", "enum": list(HOLDING_PERIODS_YEARS)}},
+            "period_years": {"type": "integer", "enum": list(HOLDING_PERIODS_YEARS),
+                             "description": "Leave out to get all three at once"}},
             "required": ["source_code"]}}},
     {"type": "function", "function": {
         "name": "search_concepts",
