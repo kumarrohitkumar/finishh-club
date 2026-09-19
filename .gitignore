@@ -33,3 +33,4 @@ logs/
 # deploy tokens - never commit
 deploy-secrets.env
 RENDER_ENV_VARS.txt
+.vercel

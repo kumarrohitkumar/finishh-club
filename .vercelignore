@@ -1,0 +1,8 @@
+frontend/
+node_modules/
+tests/
+evals/
+docs/
+logs/
+knowledge/concepts/
+.git/
