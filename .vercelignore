@@ -1,8 +1,15 @@
-frontend/
+# Shared by BOTH Vercel projects in this repo, so it must never exclude
+# something one of them needs.
+#
+#   finishh-api    deploys from the repo root  (asgi.py + vercel.json)
+#   finishh-club   deploys from frontend/      (rootDirectory setting)
+#
+# `frontend/` used to be listed here to keep the API upload small. That broke
+# the frontend build - Vercel applied this file first and deleted the very
+# package.json it was about to build. Cost: one confusing ENOENT.
+
 node_modules/
-tests/
-evals/
-docs/
-logs/
-knowledge/concepts/
 .git/
+logs/
+__pycache__/
+*.pyc
