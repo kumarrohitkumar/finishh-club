@@ -1,4 +1,17 @@
 {
-  "builds": [{ "src": "asgi.py", "use": "@vercel/python" }],
-  "routes": [{ "src": "/(.*)", "dest": "asgi.py" }]
+  "builds": [
+    {
+      "src": "asgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "asgi.py"
+    }
+  ],
+  "regions": [
+    "sin1"
+  ]
 }
