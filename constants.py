@@ -108,3 +108,9 @@ FORECAST_PATTERNS: Final[tuple[str, ...]] = (
     r"\brisk of losing\b",
     r"\bodds of\b",
 )
+
+# --- Being a good citizen of a free service ---
+# mfapi.in is a free, community-run mirror of AMFI data, maintained by one
+# person. Firing hundreds of requests at it as fast as the network allows is
+# rude and is a good way to get blocked - which would also break our own run.
+POLITE_DELAY_SECONDS: Final[float] = 0.4

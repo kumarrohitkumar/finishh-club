@@ -10,6 +10,11 @@ WHAT IT DOES
     python -m ingest.seed            # 25 funds
     python -m ingest.seed 100        # 100 funds
 
+RATE LIMITING
+    There is a short pause between funds. mfapi.in is free and community-run;
+    firing hundreds of requests at it as fast as possible is rude, and being
+    blocked halfway would break our own run too.
+
 WHY A SAMPLE FIRST
     The full seed set is 1,168 funds and about 0.36 GB. Loading a handful first
     proves the whole path works - parse, fetch, store, compute - before spending
@@ -23,13 +28,14 @@ HISTORY IS CAPPED
 from __future__ import annotations
 
 import sys
+import time
 from datetime import date, timedelta
 
 from adapters.amfi import AmfiAdapter
 from adapters.base import AssetInfo
 from config import AMFI_NAV_ALL_URL
-from constants import (DAYS_PER_YEAR, HOLDING_PERIODS_YEARS, SEED_HISTORY_YEARS,
-                       AssetType)
+from constants import (DAYS_PER_YEAR, HOLDING_PERIODS_YEARS,
+                       POLITE_DELAY_SECONDS, SEED_HISTORY_YEARS, AssetType)
 from db import repository as repo
 from db.connection import connect
 from ingest.amfi_bulk import BulkScheme, is_wanted, parse_bulk
@@ -85,6 +91,8 @@ def seed(sample_size: int = DEFAULT_SAMPLE) -> int:
     with connect() as conn:
         for n, scheme in enumerate(picked, 1):
             label = scheme.name[:46]
+            if n > 1:
+                time.sleep(POLITE_DELAY_SECONDS)   # do not hammer a free service
             try:
                 history = adapter.fetch_history(scheme.source_code)
                 if not history:

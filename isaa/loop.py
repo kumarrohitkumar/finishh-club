@@ -72,7 +72,12 @@ WHAT YOU ACTUALLY HOLD ABOUT A FUND
   benchmark returns, ratings, or anything else.
 
   If asked for something not on the first list, say plainly that you do not
-  have it. Do not answer it from memory or from general knowledge, even if you
+  have it.
+
+WHAT YOU KNOW ABOUT FINANCIAL TERMS
+  Only what search_concepts returns. If that tool comes back empty, you do NOT
+  know the term - say so. Do not define it from memory. A confident wrong
+  definition of a financial term is worse than admitting you do not have it. Do not answer it from memory or from general knowledge, even if you
   believe you know it. A number that did not come from a tool in THIS
   conversation is a fabrication, however plausible it sounds.
 
@@ -176,6 +181,7 @@ def forecast_wording(text: str) -> str | None:
 class Turn:
     answer: str = ""
     rewritten_for_wording: bool = False
+    ungrounded_explanation: bool = False
     tool_calls: list[dict] = field(default_factory=list)
     numeric_results: list[dict] = field(default_factory=list)
     steps: int = 0
@@ -234,6 +240,27 @@ def ask(question: str, fund_code: str | None = None,
                 if rewritten and not forecast_wording(rewritten):
                     answer = rewritten
                     turn.rewritten_for_wording = True
+
+            # If every concept search came back empty and no database tool ran,
+            # then anything explanatory in this answer came from the model's
+            # training data, not from our verified layer. That is rule I-2, and
+            # a plausible-sounding wrong definition on a finance site is worse
+            # than saying nothing.
+            searched = [c for c in turn.tool_calls if c["tool"] == "search_concepts"]
+            found_nothing = searched and all(not c["result"] for c in searched)
+            used_database = any(c["tool"] in NUMERIC_TOOLS or c["tool"] == "find_fund"
+                                for c in turn.tool_calls)
+            if found_nothing and not used_database:
+                turn.ungrounded_explanation = True
+                asked = searched[-1]["args"].get("question", "that")
+                answer = (
+                    f"I don't have a written explanation for that in my notes, "
+                    f"so I can't answer it reliably.\n\n"
+                    f"I only explain terms I have verified material for - things "
+                    f"like NAV, expense ratio, CAGR, XIRR, SIP, exit load, "
+                    f"drawdown, risk levels and the Finishh Meter. Ask me about "
+                    f"any of those, or about a specific fund on this page."
+                )
 
             turn.answer = answer
             turn.seconds = time.time() - started
