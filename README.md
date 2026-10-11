@@ -1,9 +1,24 @@
 # Finishh club
 
+> Explains Indian mutual funds, IPOs and stocks in plain English, with an AI assistant that answers questions and is built so it can never give investment advice.
+
+**[Live demo](https://finishh-club.vercel.app)** · No login needed
+
+**Stack:** Python · FastAPI · PostgreSQL/pgvector · React · LLM agents · Vercel · Neon
+
+## At a glance
+
+- **Real data, guarded:** 200 funds and 290,000 daily price points ingested from AMFI, with a guard that refuses to write when a source file is incomplete.
+- **Fast analytics:** a rolling-return engine evaluates every historical holding window for a fund (2,400+ windows in 4 ms), precomputed nightly so a page read is one indexed lookup.
+- **An agent built from scratch:** tool-calling loop with structured responses and retry budgets, no framework; numbers come only from SQL tools, never from retrieval. Concept search fuses keyword and vector rankings (Reciprocal Rank Fusion) over a curated knowledge base.
+- **Measured, not guessed:** 82 automated tests including an LLM eval suite that caught fabricated fund metrics and an invented definition before release; API p95 latency cut from 1,211 ms to 211 ms and agent replies from 45 s to 6 s.
+
+![Fund list](docs/screenshots/home.png)
+
+---
+
 An app that explains Indian mutual funds, IPOs and stocks in plain English.
 It never tells anyone what to buy.
-
-**Status:** R1 backend and web app complete. 74 tests passing.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kumarrohitkumar/finishh-club)
 
