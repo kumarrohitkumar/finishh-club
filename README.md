@@ -30,10 +30,10 @@ python -m db.migrate                   # create or update tables
 python -m ingest.seed 25               # load funds from AMFI
 python -m ingest.daily                 # today's NAV for funds we hold
 python -m meter.job                    # recompute every meter
-python -m knowledge.pipeline           # load concept documents
+python -m knowledge.pipeline           # load concept documents, embed what changed
 python -m isaa.loop "is this risky?" --fund 119507
 
-python -m evals.retrieval              # concept search recall
+python -m evals.retrieval --write      # concept search recall, three ways
 python -m evals.isaa_eval --quick      # Isaa refusal / grounding
 
 for t in tests/test_*.py; do python $t; done
@@ -132,3 +132,14 @@ always shown on screen.
 
 Step 1 — Postgres and pgvector in Docker, the tables from `docs/DATABASE.md`,
 then ingest all 1,828 Direct-Growth funds instead of one.
+
+---
+
+## My live projects
+
+| Project | What it does | Stack | Live | Code | Demo login |
+|---|---|---|---|---|---|
+| **Kosh LMS** | Loan management: borrowers apply (eligibility rules, salary slip, simple interest); teams sanction, disburse and collect | Next.js · Express · MongoDB · S3 | [kosh-lms.vercel.app](https://kosh-lms.vercel.app) | [lms-assignment](https://github.com/kumarrohitkumar/lms-assignment) | `admin@lms.dev` / `Password@123` |
+| **JobConnect** | Job portal: seekers search and apply in one click; recruiters post jobs and shortlist | React · Express · MongoDB · S3 | [jobconnect-portal-alpha.vercel.app](https://jobconnect-portal-alpha.vercel.app) | [Job_Portal](https://github.com/kumarrohitkumar/Job_Portal) | `student@jobconnect.dev` / `Demo@1234` |
+| **Chatify** | Real-time direct and group chat with typing, read receipts and photos | React · Socket.IO · MongoDB · AWS EC2 | [chatify-13-205-125-184.sslip.io](https://chatify-13-205-125-184.sslip.io) | [chat_app](https://github.com/kumarrohitkumar/chat_app) | `ananya@demo.chat` / `demo1234` |
+| **Finishh club** (this repo) | Explains Indian mutual funds, IPOs and stocks in plain English, never tells you what to buy | React · FastAPI (Python) | [finishh-club.vercel.app](https://finishh-club.vercel.app) | [finishh-club](https://github.com/kumarrohitkumar/finishh-club) | No login needed |
