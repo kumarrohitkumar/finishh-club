@@ -37,6 +37,16 @@ APP_VERSION: Final[str] = "0.1.0"
 GROQ_API_KEY: Final[str] = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL: Final[str] = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
+# --- Embeddings (R2 Phase A) ---
+# A DIFFERENT provider from the one above, on purpose: Groq serves chat models
+# but no embedding model, so hybrid search needs its own key.
+#
+# text-embedding-3-small returns 1536 dimensions, which is exactly the width
+# the documents table was built for - see EMBEDDING_DIMENSIONS in constants.py.
+# A model of any other width needs a migration before it can be used.
+OPENAI_API_KEY: Final[str] = os.getenv("OPENAI_API_KEY", "")
+EMBEDDING_MODEL: Final[str] = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+
 # --- Database ---
 # Neon gives you this string. Put it in .env, never in code.
 #   postgresql://user:password@host.neon.tech/dbname?sslmode=require

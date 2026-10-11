@@ -114,3 +114,43 @@ FORECAST_PATTERNS: Final[tuple[str, ...]] = (
 # person. Firing hundreds of requests at it as fast as the network allows is
 # rude and is a good way to get blocked - which would also break our own run.
 POLITE_DELAY_SECONDS: Final[float] = 0.4
+
+
+# --- Hybrid search (R2 Phase A, rules HS-1 to HS-8) ---
+# The vector width. It is a PRODUCT value, not a machine one: the database
+# column is VECTOR(1536) and an embedding of a different width simply will not
+# store. Changing this means a migration and re-embedding every row, which is
+# why it lives next to the column definition rather than in config.py.
+EMBEDDING_DIMENSIONS: Final[int] = 1536
+
+# Reciprocal Rank Fusion. A document scores by its POSITION in each ranked
+# list, never by the raw score, because ts_rank and cosine similarity are not
+# comparable numbers:
+#
+#       score(doc) = sum over lists of  weight / (RRF_K + rank)
+#
+# k decides how fast the reward decays with rank. Low k makes the top result
+# dominate; high k flattens the lists towards equality. 60 is the value from
+# the original RRF paper and the usual starting point.
+#
+# Rule HS-5 asks for one tunable number. This is it - with the weights below
+# as the finer adjustment. Both are arguments to the search functions, so the
+# eval can sweep them instead of anyone guessing.
+RRF_K: Final[int] = 60
+RRF_WEIGHTS: Final[dict[str, float]] = {"lexical": 1.0, "semantic": 1.0}
+
+# Rule HS-7. Vector search ALWAYS returns its nearest neighbours, however far
+# away they are - "nothing matched" is not a thing it can say. Without a floor,
+# a question about cricket returns the three least-unrelated finance documents
+# and Isaa answers from them.
+#
+# Cosine similarity, so 1.0 is identical and 0.0 is unrelated. Measured against
+# the eval set, not guessed: raise it until unrelated questions return nothing,
+# stop before real questions start being dropped.
+MIN_SEMANTIC_SIMILARITY: Final[float] = 0.30
+
+# Each half searches wider than the final answer, because a document ranked 8th
+# by keywords and 2nd by vectors should still be able to win the fusion. If
+# both lists were cut to 3 first, that document would never be seen.
+CANDIDATE_MULTIPLIER: Final[int] = 4
+MIN_CANDIDATES: Final[int] = 10

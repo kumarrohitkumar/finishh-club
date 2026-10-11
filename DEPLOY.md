@@ -11,15 +11,20 @@ Everything is prepared. Three steps, about 8 minutes, all free.
 Click the button. It reads `render.yaml`, so the Docker build, the health check
 and the **Singapore** region are already set.
 
-Sign in with GitHub. Then it asks for four environment variables — the exact
+Sign in with GitHub. Then it asks for five environment variables — the exact
 values are in **`RENDER_ENV_VARS.txt`** on your machine (gitignored):
 
 | Variable | Value |
 |---|---|
 | `DATABASE_URL` | the Neon **Singapore** string |
 | `GROQ_API_KEY` | your Groq key |
+| `OPENAI_API_KEY` | your OpenAI key — embeddings only, see below |
 | `GROQ_MODEL` | `openai/gpt-oss-20b` |
 | `ALLOWED_ORIGINS` | leave empty — filled in at step 3 |
+
+`OPENAI_API_KEY` is the only one you can skip. Isaa's concept search then runs
+on keywords alone, as it did in R1 — worse answers to reworded questions, but
+nothing breaks. Everything else on the site is unaffected either way.
 
 You get a URL like `https://finishh-api.onrender.com`.
 

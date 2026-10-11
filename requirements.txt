@@ -9,3 +9,4 @@ pydantic>=2.13              # response validation and structured output
 groq>=1.7                   # the LLM Isaa runs on
 python-dotenv>=1.2          # reads .env files
 certifi>=2026.7             # CA bundle - macOS Python cannot verify TLS without it
+openai>=1.60                # embeddings only - the chat model is Groq

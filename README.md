@@ -30,10 +30,10 @@ python -m db.migrate                   # create or update tables
 python -m ingest.seed 25               # load funds from AMFI
 python -m ingest.daily                 # today's NAV for funds we hold
 python -m meter.job                    # recompute every meter
-python -m knowledge.pipeline           # load concept documents
+python -m knowledge.pipeline           # load concept documents, embed what changed
 python -m isaa.loop "is this risky?" --fund 119507
 
-python -m evals.retrieval              # concept search recall
+python -m evals.retrieval --write      # concept search recall, three ways
 python -m evals.isaa_eval --quick      # Isaa refusal / grounding
 
 for t in tests/test_*.py; do python $t; done
